@@ -1,11 +1,33 @@
-<resources>
+<resources xmlns:tools="http://schemas.android.com/tools">
 
     <!-- Base application theme. -->
-    <style name="AppTheme" parent="Theme.AppCompat.Light.DarkActionBar">
-        <!-- Customize your theme here. -->
+    <style name="AppTheme" parent="BaseTheme"/>
+    <style name="BaseTheme" parent="Theme.AppCompat.Light.NoActionBar">
         <item name="colorPrimary">@color/colorPrimary</item>
         <item name="colorPrimaryDark">@color/colorPrimaryDark</item>
         <item name="colorAccent">@color/colorAccent</item>
+        <item name="actionBarStyle">@style/MyActionBar</item>
+    </style>
+
+    <style name="MyActionBar" parent="@style/Widget.AppCompat.ActionBar.Solid">
+        <item name="titleTextStyle">@style/MyTitleTextStyle</item>
+        <item name="android:titleMarginBottom" tools:ignore="NewApi">200dip</item>
+    </style>
+
+    <style name="CollapsingToolbarTextStyle" parent="@style/TextAppearance.AppCompat.Title">
+        <item name="android:textSize">30dp</item>
+    </style>
+
+    <style name="MyTitleTextStyle" parent="@style/TextAppearance.AppCompat.Widget.ActionBar.Title">
+        <item name="android:textColor">@color/colorPrimaryDark</item>
+        <item name="android:titleMargin" tools:ignore="NewApi">20dp</item>
+        <item name="android:subtitleTextAppearance">@style/MySubtitleTextStyle</item>
+
+    </style>
+
+    <style name="MySubtitleTextStyle" parent="@style/TextAppearance.AppCompat.Widget.ActionBar.Subtitle">
+        <item name="android:textColor">@color/colorAccent</item>
+        <item name="android:layout_marginTop">20dp</item>
     </style>
 
 </resources>
