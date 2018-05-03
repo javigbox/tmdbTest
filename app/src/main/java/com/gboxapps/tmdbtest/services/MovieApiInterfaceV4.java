@@ -4,6 +4,7 @@ import retrofit.Callback;
 import retrofit.client.Response;
 import retrofit.http.GET;
 import retrofit.http.Path;
+import retrofit.http.Query;
 
 public interface MovieApiInterfaceV4 {
 
@@ -14,6 +15,6 @@ public interface MovieApiInterfaceV4 {
      * @param lang language of request
      * @param callback callback to get the response
      */
-    @GET("/list/{page}?api_key={api_key}&language={lang}")
-    void getListMovies(@Path("api_key") String api_key, @Path("page") String page, @Path("lang") String lang, Callback<Response> callback);
+    @GET("/list/{page}")
+    void getListMovies(@Query("api_key") String api_key, @Path("page") String page, @Query("lang") String lang, Callback<Response> callback);
 }
