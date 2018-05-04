@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">TmdbTest</string>
+
+    <string name="search_hint">Search...</string>
+
+    <string name="year">Year:</string>
+    <string name="overview">Overview:</string>
+</resources>
