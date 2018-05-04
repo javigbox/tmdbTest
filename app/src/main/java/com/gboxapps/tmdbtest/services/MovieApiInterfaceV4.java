@@ -14,7 +14,8 @@ public interface MovieApiInterfaceV4 {
      * @param page page requested
      * @param lang language of request
      * @param callback callback to get the response
+     *                 1?page=1&api_key=93aea0c77bc168d8bbce3918cefefa45&language=es
      */
-    @GET("/list/{page}")
-    void getListMovies(@Query("api_key") String api_key, @Path("page") String page, @Query("lang") String lang, Callback<Response> callback);
+    @GET("/list/1")
+    void getListMovies(@Query("api_key") String api_key, @Query("page") String page, @Query("language") String lang, Callback<Response> callback);
 }

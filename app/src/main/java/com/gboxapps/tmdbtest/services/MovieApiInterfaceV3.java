@@ -17,6 +17,6 @@ public interface MovieApiInterfaceV3 {
      * @param callback callback to get the response
      */
     @GET("/search/movie")
-    void searchMovies(@Query("api_key") String api_key, @Query("page") String page, @Query("query") String query, @Query("lang") String lang, Callback<Response> callback);
+    void searchMovies(@Query("api_key") String api_key, @Query("page") String page, @Query("query") String query, @Query("language") String lang, Callback<Response> callback);
 
 }
