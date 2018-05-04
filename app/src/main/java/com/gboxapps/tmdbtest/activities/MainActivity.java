@@ -6,6 +6,7 @@ import android.graphics.Typeface;
 import android.support.design.widget.AppBarLayout;
 import android.support.design.widget.CollapsingToolbarLayout;
 import android.support.design.widget.FloatingActionButton;
+import android.support.v4.view.MenuItemCompat;
 import android.support.v4.widget.NestedScrollView;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
@@ -65,6 +66,7 @@ public class MainActivity extends AppCompatActivity {
     private MovieApiInterfaceV4 movieApiInterfaceV4;
 
     private List<Movie> movies = new ArrayList<>();
+    private List<Movie> moviesSearch = new ArrayList<>();
     private LinearLayoutManager mLayoutManager;
     private MovieAdapter movieAdapter;
 
@@ -73,6 +75,9 @@ public class MainActivity extends AppCompatActivity {
     private int totalItemCount = 0;
     private int pastVisiblesItems = 0;
     private boolean isLoading = false;
+    private boolean isSearchActive = false;
+    private boolean isNewSearch = false;
+    private String query = "";
 
     private MenuItem searchItem;
 
@@ -108,12 +113,24 @@ public class MainActivity extends AppCompatActivity {
             String json = Util.getString(response.getBody());
 
             List<Movie> resultList = MoviesParser.parseMovies(json);
-            movieAdapter = new MovieAdapter(resultList, MainActivity.this, new MovieAdapter.OnItemClickListener() {
-                @Override
-                public void onItemClick(Movie item, View view) {
+            moviesSearch.addAll(resultList);
+            if(isNewSearch){
 
-                }
-            });
+                movieAdapter = new MovieAdapter(resultList, MainActivity.this, new MovieAdapter.OnItemClickListener() {
+                    @Override
+                    public void onItemClick(Movie item, View view) {
+
+                    }
+                });
+
+            } else {
+                movieAdapter = new MovieAdapter(moviesSearch, MainActivity.this, new MovieAdapter.OnItemClickListener() {
+                    @Override
+                    public void onItemClick(Movie item, View view) {
+
+                    }
+                });
+            }
             recyclerView.setAdapter(movieAdapter);
             movieAdapter.notifyDataSetChanged();
 
@@ -163,7 +180,7 @@ public class MainActivity extends AppCompatActivity {
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        switch (item.getItemId()){
+        switch (item.getItemId()) {
             case R.id.action_search:
 
                 SearchManager searchManager = (SearchManager) MainActivity.this.getSystemService(Context.SEARCH_SERVICE);
@@ -180,10 +197,37 @@ public class MainActivity extends AppCompatActivity {
                         @Override
                         public boolean onQueryTextChange(String newText) {
                             currentPage = 1;
-                            movieApiInterfaceV3.searchMovies(Constants.API_KEY, String.valueOf(currentPage), newText, Util.getIsoCode(MainActivity.this), callbackSearch);
+                            query = newText;
+                            movies.clear();
+                            moviesSearch.clear();
+                            if (query.equals(""))
+                                movieApiInterfaceV4.getListMovies(Constants.API_KEY, String.valueOf(currentPage), Util.getIsoCode(MainActivity.this), callbackList);
+                            else{
+                                isNewSearch = true;
+                                movieApiInterfaceV3.searchMovies(Constants.API_KEY, String.valueOf(currentPage), query, Util.getIsoCode(MainActivity.this), callbackSearch);
+                            }
                             return false;
                         }
                     });
+                    MenuItemCompat.setOnActionExpandListener(item, new MenuItemCompat.OnActionExpandListener() {
+                        @Override
+                        public boolean onMenuItemActionExpand(MenuItem item) {
+                            isSearchActive = true;
+                            appBarLayout.setExpanded(true);
+                            nestedScroll.scrollTo(0, 0);
+                            return true;
+                        }
+
+                        @Override
+                        public boolean onMenuItemActionCollapse(MenuItem item) {
+                            isSearchActive = false;
+                            currentPage = 1;
+                            appBarLayout.setExpanded(true);
+                            nestedScroll.scrollTo(0, 0);
+                            return true;
+                        }
+                    });
+
                 }
                 if (searchView != null) {
                     searchView.setSearchableInfo(searchManager.getSearchableInfo(MainActivity.this.getComponentName()));
@@ -217,13 +261,8 @@ public class MainActivity extends AppCompatActivity {
             public void onStateChanged(AppBarLayout appBarLayout, State state) {
                 if (state.name().equals("EXPANDED") || state.name().equals("IDLE")) {
                     fab.hide();
-//                    toolbarTitle.setText("");
-//                    toolbarTitle.setVisibility(View.GONE);
                 } else {
                     fab.show();
-//                    toolbarTitle.setText(getResources().getString(R.string.main_booking));
-//                    toolbarTitle.setVisibility(View.VISIBLE);
-//                    toolbarTitle.startAnimation(fadeIn);
                 }
             }
         });
@@ -245,7 +284,12 @@ public class MainActivity extends AppCompatActivity {
 
                                 isLoading = true;
                                 currentPage++;
-                                movieApiInterfaceV4.getListMovies(Constants.API_KEY, String.valueOf(currentPage), Util.getIsoCode(MainActivity.this), callbackList);
+                                if (isSearchActive){
+                                    isNewSearch = false;
+                                    movieApiInterfaceV3.searchMovies(Constants.API_KEY, String.valueOf(currentPage), query, Util.getIsoCode(MainActivity.this), callbackSearch);
+                                }
+                                else
+                                    movieApiInterfaceV4.getListMovies(Constants.API_KEY, String.valueOf(currentPage), Util.getIsoCode(MainActivity.this), callbackList);
 
                             }
                         }
@@ -261,9 +305,9 @@ public class MainActivity extends AppCompatActivity {
     }
 
     @OnClick({R.id.fab, R.id.fab_bar})
-    public void search(){
+    public void search() {
         searchItem.setEnabled(true);
-        ((ActionMenuItemView)findViewById(R.id.action_search)).callOnClick();
+        ((ActionMenuItemView) findViewById(R.id.action_search)).callOnClick();
         searchItem.setEnabled(false);
     }
 

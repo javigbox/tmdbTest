@@ -17,7 +17,8 @@ public class ApiClient {
 
     private static final String TMDB_SERVICE = "tmdb_service";
 
-    private static RestAdapter tmdbRestAdapter;
+    private static RestAdapter tmdbRestAdapterV3;
+    private static RestAdapter tmdbRestAdapterV4;
 
     private static MovieApiInterfaceV3 movieApiInterfaceV3;
     private static MovieApiInterfaceV4 movieApiInterfaceV4;
@@ -31,10 +32,18 @@ public class ApiClient {
 
         if (TMDB_SERVICE.equals(service)) {
 
-            if (tmdbRestAdapter == null) {
-                tmdbRestAdapter = createRestAdapter(context, service, api_version);
+            if(api_version == 3){
+                if (tmdbRestAdapterV3 == null) {
+                    tmdbRestAdapterV3 = createRestAdapter(context, service, api_version);
+                    restAdapter = tmdbRestAdapterV3;
+                }
+            } else {
+                if (tmdbRestAdapterV4 == null) {
+                    tmdbRestAdapterV4 = createRestAdapter(context, service, api_version);
+                    restAdapter = tmdbRestAdapterV4;
+                }
             }
-            restAdapter = tmdbRestAdapter;
+
         }
         return restAdapter;
     }
