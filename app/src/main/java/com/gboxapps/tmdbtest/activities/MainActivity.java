@@ -25,6 +25,7 @@ import com.gboxapps.tmdbtest.util.AppBarStateChangeListener;
 import com.gboxapps.tmdbtest.util.Constants;
 import com.gboxapps.tmdbtest.util.Util;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import butterknife.BindView;
@@ -53,7 +54,7 @@ public class MainActivity extends AppCompatActivity {
 
     private MovieApiInterfaceV4 movieApiInterfaceV4;
 
-    private List<Movie> movies;
+    private List<Movie> movies = new ArrayList<>();
     private LinearLayoutManager mLayoutManager;
     private MovieAdapter movieAdapter;
 
@@ -68,7 +69,8 @@ public class MainActivity extends AppCompatActivity {
         public void success(Response response, Response response2) {
             String json = Util.getString(response.getBody());
 
-            movies = MoviesParser.parseMovies(json);
+            List<Movie> resultList = MoviesParser.parseMovies(json);
+            movies.addAll(resultList);
             movieAdapter = new MovieAdapter(movies, MainActivity.this, new MovieAdapter.OnItemClickListener() {
                 @Override
                 public void onItemClick(Movie item, View view) {
