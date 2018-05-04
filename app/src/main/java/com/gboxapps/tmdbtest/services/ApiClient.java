@@ -72,7 +72,7 @@ public class ApiClient {
                 String contentLengthHeader = originalResponse.header("Content-Length");
                 if(contentLengthHeader != null && contentLengthHeader.equals("0")) {
                     return originalResponse.newBuilder()
-                            .header("Content-Encoding", "identity")
+                            .header("Content-Encoding", "application/json;charset=utf-8")
                             .build();
                 }
                 return originalResponse;

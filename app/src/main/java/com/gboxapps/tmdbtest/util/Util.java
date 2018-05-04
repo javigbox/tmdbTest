@@ -4,15 +4,17 @@ import android.app.Activity;
 import android.content.Context;
 import android.telephony.TelephonyManager;
 
+import java.io.BufferedReader;
 import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.util.Locale;
 
 import retrofit.mime.TypedInput;
 
 public class Util {
 
     public static String getIsoCode(Activity activity){
-        TelephonyManager tm = (TelephonyManager)activity.getSystemService(Context.TELEPHONY_SERVICE);
-        return tm.getSimCountryIso();
+        return Locale.getDefault().getLanguage();
     }
 
     /**
@@ -22,15 +24,20 @@ public class Util {
      * @return
      */
     public static String getString(TypedInput input) {
-        int ch;
         StringBuilder sb = new StringBuilder();
         try {
             InputStream is = input.in();
-            while ((ch = is.read()) != -1) sb.append((char) ch);
+            InputStreamReader inputStreamReader = new InputStreamReader((InputStream)is, "UTF-8");
+            BufferedReader br = new BufferedReader(inputStreamReader);
+            String line;
+            while ((line = br.readLine()) != null) {
+                sb.append(line);
+            }
         } catch (Exception e) {
             return null;
         }
         return sb.toString();
+
     }
 
 }
