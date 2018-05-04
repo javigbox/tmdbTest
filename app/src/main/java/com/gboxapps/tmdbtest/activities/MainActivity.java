@@ -5,6 +5,7 @@ import android.graphics.Typeface;
 import android.support.design.widget.AppBarLayout;
 import android.support.design.widget.CollapsingToolbarLayout;
 import android.support.design.widget.FloatingActionButton;
+import android.support.v4.widget.NestedScrollView;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -12,6 +13,7 @@ import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
 import android.view.View;
+import android.widget.Toast;
 
 import com.gboxapps.tmdbtest.R;
 import com.gboxapps.tmdbtest.adapters.MovieAdapter;
@@ -43,6 +45,9 @@ public class MainActivity extends AppCompatActivity {
     @BindView(R.id.recyclerview)
     RecyclerView recyclerView;
 
+    @BindView(R.id.nestedScroll)
+    NestedScrollView nestedScroll;
+
     private Toolbar toolbar;
     private CollapsingToolbarLayout collapsingToolbarLayout;
 
@@ -51,6 +56,37 @@ public class MainActivity extends AppCompatActivity {
     private List<Movie> movies;
     private LinearLayoutManager mLayoutManager;
     private MovieAdapter movieAdapter;
+
+    private int currentPage = 1;
+    private int visibleItemCount = 0;
+    private int totalItemCount = 0;
+    private int pastVisiblesItems = 0;
+    private boolean isLoading = false;
+
+    private Callback<Response> callbackList = new Callback<Response>() {
+        @Override
+        public void success(Response response, Response response2) {
+            String json = Util.getString(response.getBody());
+
+            movies = MoviesParser.parseMovies(json);
+            movieAdapter = new MovieAdapter(movies, MainActivity.this, new MovieAdapter.OnItemClickListener() {
+                @Override
+                public void onItemClick(Movie item, View view) {
+
+                }
+            });
+            recyclerView.setAdapter(movieAdapter);
+            movieAdapter.notifyDataSetChanged();
+
+            isLoading = false;
+        }
+
+        @Override
+        public void failure(RetrofitError error) {
+            String errord = error.getMessage();
+            isLoading = false;
+        }
+    };
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -89,7 +125,7 @@ public class MainActivity extends AppCompatActivity {
         collapsingToolbarLayout.setExpandedTitleMarginBottom(70);
     }
 
-    public void setupWidgets(){
+    public void setupWidgets() {
         recyclerView.setNestedScrollingEnabled(false);
 
         appBarLayout.addOnOffsetChangedListener(new AppBarStateChangeListener() {
@@ -107,31 +143,37 @@ public class MainActivity extends AppCompatActivity {
                 }
             }
         });
-    }
 
-    public void getMovieList(){
-        movieApiInterfaceV4.getListMovies(Constants.API_KEY, "1", Util.getIsoCode(this), new Callback<Response>() {
+        nestedScroll.setOnScrollChangeListener(new NestedScrollView.OnScrollChangeListener() {
             @Override
-            public void success(Response response, Response response2) {
-                String json = Util.getString(response.getBody());
+            public void onScrollChange(NestedScrollView v, int scrollX, int scrollY, int oldScrollX, int oldScrollY) {
+                if (v.getChildAt(v.getChildCount() - 1) != null) {
+                    if ((scrollY >= (v.getChildAt(v.getChildCount() - 1).getMeasuredHeight() - v.getMeasuredHeight())) &&
+                            scrollY > oldScrollY) {
 
-                movies = MoviesParser.parseMovies(json);
-                movieAdapter = new MovieAdapter(movies, MainActivity.this, new MovieAdapter.OnItemClickListener() {
-                    @Override
-                    public void onItemClick(Movie item, View view) {
+                        visibleItemCount = mLayoutManager.getChildCount();
+                        totalItemCount = mLayoutManager.getItemCount();
+                        pastVisiblesItems = mLayoutManager.findFirstVisibleItemPosition();
 
+                        if (!isLoading) {
+
+                            if ((visibleItemCount + pastVisiblesItems) >= totalItemCount) {
+
+                                isLoading = true;
+                                currentPage++;
+                                movieApiInterfaceV4.getListMovies(Constants.API_KEY, String.valueOf(currentPage), Util.getIsoCode(MainActivity.this), callbackList);
+
+                            }
+                        }
                     }
-                });
-                recyclerView.setAdapter(movieAdapter);
-                movieAdapter.notifyDataSetChanged();
-
-            }
-
-            @Override
-            public void failure(RetrofitError error) {
-                String errord = error.getMessage();
+                }
             }
         });
+    }
+
+    public void getMovieList() {
+        isLoading = true;
+        movieApiInterfaceV4.getListMovies(Constants.API_KEY, String.valueOf(currentPage), Util.getIsoCode(this), callbackList);
     }
 
 }
