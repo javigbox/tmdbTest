@@ -1,5 +1,6 @@
 package com.gboxapps.tmdbtest.activities;
 
+import android.app.SearchManager;
 import android.content.Context;
 import android.graphics.Typeface;
 import android.support.design.widget.AppBarLayout;
@@ -9,9 +10,14 @@ import android.support.v4.widget.NestedScrollView;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.support.v7.view.menu.ActionMenuItemView;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.support.v7.widget.SearchView;
 import android.support.v7.widget.Toolbar;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.Toast;
 
@@ -20,6 +26,7 @@ import com.gboxapps.tmdbtest.adapters.MovieAdapter;
 import com.gboxapps.tmdbtest.model.Movie;
 import com.gboxapps.tmdbtest.parsers.MoviesParser;
 import com.gboxapps.tmdbtest.services.ApiClient;
+import com.gboxapps.tmdbtest.services.MovieApiInterfaceV3;
 import com.gboxapps.tmdbtest.services.MovieApiInterfaceV4;
 import com.gboxapps.tmdbtest.util.AppBarStateChangeListener;
 import com.gboxapps.tmdbtest.util.Constants;
@@ -30,6 +37,7 @@ import java.util.List;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
+import butterknife.OnClick;
 import retrofit.Callback;
 import retrofit.RetrofitError;
 import retrofit.client.Response;
@@ -51,7 +59,9 @@ public class MainActivity extends AppCompatActivity {
 
     private Toolbar toolbar;
     private CollapsingToolbarLayout collapsingToolbarLayout;
+    private SearchView searchView;
 
+    private MovieApiInterfaceV3 movieApiInterfaceV3;
     private MovieApiInterfaceV4 movieApiInterfaceV4;
 
     private List<Movie> movies = new ArrayList<>();
@@ -63,6 +73,8 @@ public class MainActivity extends AppCompatActivity {
     private int totalItemCount = 0;
     private int pastVisiblesItems = 0;
     private boolean isLoading = false;
+
+    private MenuItem searchItem;
 
     private Callback<Response> callbackList = new Callback<Response>() {
         @Override
@@ -90,12 +102,38 @@ public class MainActivity extends AppCompatActivity {
         }
     };
 
+    private Callback<Response> callbackSearch = new Callback<Response>() {
+        @Override
+        public void success(Response response, Response response2) {
+            String json = Util.getString(response.getBody());
+
+            List<Movie> resultList = MoviesParser.parseMovies(json);
+            movieAdapter = new MovieAdapter(resultList, MainActivity.this, new MovieAdapter.OnItemClickListener() {
+                @Override
+                public void onItemClick(Movie item, View view) {
+
+                }
+            });
+            recyclerView.setAdapter(movieAdapter);
+            movieAdapter.notifyDataSetChanged();
+
+            isLoading = false;
+        }
+
+        @Override
+        public void failure(RetrofitError error) {
+            String errord = error.getMessage();
+            isLoading = false;
+        }
+    };
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         ButterKnife.bind(this);
 
+        movieApiInterfaceV3 = ApiClient.getMovieV3ServiceInterface(this);
         movieApiInterfaceV4 = ApiClient.getMovieV4ServiceInterface(this);
 
         mLayoutManager = new LinearLayoutManager(this);
@@ -110,6 +148,50 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void attachBaseContext(Context newBase) {
         super.attachBaseContext(CalligraphyContextWrapper.wrap(newBase));
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        MenuInflater menuInflater = getMenuInflater();
+        menuInflater.inflate(R.menu.menu_search, menu);
+
+        searchItem = menu.findItem(R.id.action_search);
+        searchItem.setEnabled(false);
+
+        return super.onCreateOptionsMenu(menu);
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId()){
+            case R.id.action_search:
+
+                SearchManager searchManager = (SearchManager) MainActivity.this.getSystemService(Context.SEARCH_SERVICE);
+
+                searchView = null;
+                if (item != null) {
+                    searchView = (SearchView) item.getActionView();
+                    searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
+                        @Override
+                        public boolean onQueryTextSubmit(String query) {
+                            return false;
+                        }
+
+                        @Override
+                        public boolean onQueryTextChange(String newText) {
+                            currentPage = 1;
+                            movieApiInterfaceV3.searchMovies(Constants.API_KEY, String.valueOf(currentPage), newText, Util.getIsoCode(MainActivity.this), callbackSearch);
+                            return false;
+                        }
+                    });
+                }
+                if (searchView != null) {
+                    searchView.setSearchableInfo(searchManager.getSearchableInfo(MainActivity.this.getComponentName()));
+                }
+                return true;
+            default:
+                return super.onOptionsItemSelected(item);
+        }
     }
 
     private void initToolbar() {
@@ -176,6 +258,13 @@ public class MainActivity extends AppCompatActivity {
     public void getMovieList() {
         isLoading = true;
         movieApiInterfaceV4.getListMovies(Constants.API_KEY, String.valueOf(currentPage), Util.getIsoCode(this), callbackList);
+    }
+
+    @OnClick({R.id.fab, R.id.fab_bar})
+    public void search(){
+        searchItem.setEnabled(true);
+        ((ActionMenuItemView)findViewById(R.id.action_search)).callOnClick();
+        searchItem.setEnabled(false);
     }
 
 }
