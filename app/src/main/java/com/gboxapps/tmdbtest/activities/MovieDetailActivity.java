@@ -15,10 +15,12 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.MenuItem;
 import android.widget.ImageView;
+import android.widget.TextView;
 
 import com.gboxapps.tmdbtest.R;
 import com.gboxapps.tmdbtest.model.Movie;
 import com.gboxapps.tmdbtest.util.Constants;
+import com.gboxapps.tmdbtest.util.Util;
 import com.squareup.picasso.Callback;
 import com.squareup.picasso.Picasso;
 
@@ -33,6 +35,12 @@ public class MovieDetailActivity extends AppCompatActivity {
 
     @BindView(R.id.poster)
     ImageView mImagePoster;
+
+    @BindView(R.id.overview)
+    TextView overView;
+
+    @BindView(R.id.year)
+    TextView year;
 
     private Movie movie;
     private String posterTransitionName;
@@ -68,6 +76,9 @@ public class MovieDetailActivity extends AppCompatActivity {
                         supportStartPostponedEnterTransition();
                     }
                 });
+
+        overView.setText(movie.getOverview());
+        year.setText(Util.getYearFromDate(movie.getRelease_date()));
 
         initToolbar();
     }
