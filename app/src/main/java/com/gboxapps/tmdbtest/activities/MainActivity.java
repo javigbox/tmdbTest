@@ -2,11 +2,14 @@ package com.gboxapps.tmdbtest.activities;
 
 import android.app.SearchManager;
 import android.content.Context;
+import android.content.Intent;
 import android.graphics.Typeface;
 import android.support.design.widget.AppBarLayout;
 import android.support.design.widget.CollapsingToolbarLayout;
 import android.support.design.widget.FloatingActionButton;
+import android.support.v4.app.ActivityOptionsCompat;
 import android.support.v4.view.MenuItemCompat;
+import android.support.v4.view.ViewCompat;
 import android.support.v4.widget.NestedScrollView;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
@@ -20,15 +23,14 @@ import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
-import android.widget.Toast;
+import android.widget.ImageView;
 
 import com.gboxapps.tmdbtest.R;
 import com.gboxapps.tmdbtest.adapters.MovieAdapter;
 import com.gboxapps.tmdbtest.model.Movie;
 import com.gboxapps.tmdbtest.parsers.MoviesParser;
 import com.gboxapps.tmdbtest.services.ApiClient;
-import com.gboxapps.tmdbtest.services.MovieApiInterfaceV3;
-import com.gboxapps.tmdbtest.services.MovieApiInterfaceV4;
+import com.gboxapps.tmdbtest.services.MovieApiInterface;
 import com.gboxapps.tmdbtest.util.AppBarStateChangeListener;
 import com.gboxapps.tmdbtest.util.Constants;
 import com.gboxapps.tmdbtest.util.Util;
@@ -62,8 +64,7 @@ public class MainActivity extends AppCompatActivity {
     private CollapsingToolbarLayout collapsingToolbarLayout;
     private SearchView searchView;
 
-    private MovieApiInterfaceV3 movieApiInterfaceV3;
-    private MovieApiInterfaceV4 movieApiInterfaceV4;
+    private MovieApiInterface movieApiInterface;
 
     private List<Movie> movies = new ArrayList<>();
     private List<Movie> moviesSearch = new ArrayList<>();
@@ -90,8 +91,17 @@ public class MainActivity extends AppCompatActivity {
             movies.addAll(resultList);
             movieAdapter = new MovieAdapter(movies, MainActivity.this, new MovieAdapter.OnItemClickListener() {
                 @Override
-                public void onItemClick(Movie item, View view) {
+                public void onItemClick(int position, Movie item, View view, ImageView imageView) {
+                    Intent intent = new Intent(MainActivity.this, MovieDetailActivity.class);
+                    intent.putExtra("movie", item);
+                    intent.putExtra("poster_transition_name", ViewCompat.getTransitionName(imageView));
 
+                    ActivityOptionsCompat options = ActivityOptionsCompat.makeSceneTransitionAnimation(
+                            MainActivity.this,
+                            imageView,
+                            ViewCompat.getTransitionName(imageView));
+
+                    startActivity(intent, options.toBundle());
                 }
             });
             recyclerView.setAdapter(movieAdapter);
@@ -114,20 +124,38 @@ public class MainActivity extends AppCompatActivity {
 
             List<Movie> resultList = MoviesParser.parseMovies(json);
             moviesSearch.addAll(resultList);
-            if(isNewSearch){
+            if (isNewSearch) {
 
                 movieAdapter = new MovieAdapter(resultList, MainActivity.this, new MovieAdapter.OnItemClickListener() {
                     @Override
-                    public void onItemClick(Movie item, View view) {
+                    public void onItemClick(int position, Movie item, View view, ImageView poster) {
+                        Intent intent = new Intent(MainActivity.this, MovieDetailActivity.class);
+                        intent.putExtra("movie", item);
+                        intent.putExtra("poster_transition_name", ViewCompat.getTransitionName(poster));
 
+                        ActivityOptionsCompat options = ActivityOptionsCompat.makeSceneTransitionAnimation(
+                                MainActivity.this,
+                                poster,
+                                ViewCompat.getTransitionName(poster));
+
+                        startActivity(intent, options.toBundle());
                     }
                 });
 
             } else {
                 movieAdapter = new MovieAdapter(moviesSearch, MainActivity.this, new MovieAdapter.OnItemClickListener() {
                     @Override
-                    public void onItemClick(Movie item, View view) {
+                    public void onItemClick(int position, Movie item, View view, ImageView poster) {
+                        Intent intent = new Intent(MainActivity.this, MovieDetailActivity.class);
+                        intent.putExtra("movie", item);
+                        intent.putExtra("poster_transition_name", ViewCompat.getTransitionName(poster));
 
+                        ActivityOptionsCompat options = ActivityOptionsCompat.makeSceneTransitionAnimation(
+                                MainActivity.this,
+                                poster,
+                                ViewCompat.getTransitionName(poster));
+
+                        startActivity(intent, options.toBundle());
                     }
                 });
             }
@@ -150,8 +178,7 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
         ButterKnife.bind(this);
 
-        movieApiInterfaceV3 = ApiClient.getMovieV3ServiceInterface(this);
-        movieApiInterfaceV4 = ApiClient.getMovieV4ServiceInterface(this);
+        movieApiInterface = ApiClient.getMovieServiceInterface(this);
 
         mLayoutManager = new LinearLayoutManager(this);
         mLayoutManager.setOrientation(LinearLayoutManager.VERTICAL);
@@ -201,10 +228,11 @@ public class MainActivity extends AppCompatActivity {
                             movies.clear();
                             moviesSearch.clear();
                             if (query.equals(""))
-                                movieApiInterfaceV4.getListMovies(Constants.API_KEY, String.valueOf(currentPage), Util.getIsoCode(MainActivity.this), callbackList);
-                            else{
+                                movieApiInterface.getPopularMovies(Constants.API_KEY, String.valueOf(currentPage),
+                                        Util.getIsoCode(MainActivity.this), Util.getIsoCode(MainActivity.this), callbackList);
+                            else {
                                 isNewSearch = true;
-                                movieApiInterfaceV3.searchMovies(Constants.API_KEY, String.valueOf(currentPage), query, Util.getIsoCode(MainActivity.this), callbackSearch);
+                                movieApiInterface.searchMovies(Constants.API_KEY, String.valueOf(currentPage), query, Util.getIsoCode(MainActivity.this), callbackSearch);
                             }
                             return false;
                         }
@@ -284,12 +312,12 @@ public class MainActivity extends AppCompatActivity {
 
                                 isLoading = true;
                                 currentPage++;
-                                if (isSearchActive){
+                                if (isSearchActive) {
                                     isNewSearch = false;
-                                    movieApiInterfaceV3.searchMovies(Constants.API_KEY, String.valueOf(currentPage), query, Util.getIsoCode(MainActivity.this), callbackSearch);
-                                }
-                                else
-                                    movieApiInterfaceV4.getListMovies(Constants.API_KEY, String.valueOf(currentPage), Util.getIsoCode(MainActivity.this), callbackList);
+                                    movieApiInterface.searchMovies(Constants.API_KEY, String.valueOf(currentPage), query, Util.getIsoCode(MainActivity.this), callbackSearch);
+                                } else
+                                    movieApiInterface.getPopularMovies(Constants.API_KEY, String.valueOf(currentPage),
+                                            Util.getIsoCode(MainActivity.this), Util.getIsoCode(MainActivity.this), callbackList);
 
                             }
                         }
@@ -301,7 +329,8 @@ public class MainActivity extends AppCompatActivity {
 
     public void getMovieList() {
         isLoading = true;
-        movieApiInterfaceV4.getListMovies(Constants.API_KEY, String.valueOf(currentPage), Util.getIsoCode(this), callbackList);
+        movieApiInterface.getPopularMovies(Constants.API_KEY, String.valueOf(currentPage),
+                Util.getIsoCode(MainActivity.this), Util.getIsoCode(MainActivity.this), callbackList);
     }
 
     @OnClick({R.id.fab, R.id.fab_bar})

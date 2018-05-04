@@ -14,7 +14,7 @@
     <View
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:background="@color/black_30_alpha"></View>
+        android:background="@color/black_20_alpha"></View>
 
     <TextView
         fontPath="fonts/SourceSansPro-Bold.ttf"

@@ -6,7 +6,18 @@ import retrofit.http.GET;
 import retrofit.http.Path;
 import retrofit.http.Query;
 
-public interface MovieApiInterfaceV3 {
+public interface MovieApiInterface {
+
+    /**
+     * Get popular movies
+     * @param api_key The api-key of the application
+     * @param page Page to query
+     * @param lang ISO 639-1 value to display translated data.
+     * @param region ISO 3166-1 code to filter release dates.
+     * @param callback
+     */
+    @GET("/movie/popular")
+    void getPopularMovies(@Query("api_key") String api_key, @Query("page") String page, @Query("language") String lang, @Query("region") String region, Callback<Response> callback);
 
     /**
      * Get a movie list filtered by name

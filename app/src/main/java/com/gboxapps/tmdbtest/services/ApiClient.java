@@ -17,31 +17,22 @@ public class ApiClient {
 
     private static final String TMDB_SERVICE = "tmdb_service";
 
-    private static RestAdapter tmdbRestAdapterV3;
-    private static RestAdapter tmdbRestAdapterV4;
+    private static RestAdapter tmdbRestAdapter;
 
-    private static MovieApiInterfaceV3 movieApiInterfaceV3;
-    private static MovieApiInterfaceV4 movieApiInterfaceV4;
+    private static MovieApiInterface movieApiInterface;
 
     private ApiClient() {
     }
 
-    private static RestAdapter getRestAdapter(Context context, String service, int api_version) {
+    private static RestAdapter getRestAdapter(Context context, String service) {
 
         RestAdapter restAdapter = null;
 
         if (TMDB_SERVICE.equals(service)) {
 
-            if(api_version == 3){
-                if (tmdbRestAdapterV3 == null) {
-                    tmdbRestAdapterV3 = createRestAdapter(context, service, api_version);
-                    restAdapter = tmdbRestAdapterV3;
-                }
-            } else {
-                if (tmdbRestAdapterV4 == null) {
-                    tmdbRestAdapterV4 = createRestAdapter(context, service, api_version);
-                    restAdapter = tmdbRestAdapterV4;
-                }
+            if (tmdbRestAdapter == null) {
+                tmdbRestAdapter = createRestAdapter(context, service);
+                restAdapter = tmdbRestAdapter;
             }
 
         }
@@ -54,15 +45,12 @@ public class ApiClient {
      * @param context context to access the application resources
      * @return A {@link RestAdapter} adapter instance.
      */
-    private static RestAdapter createRestAdapter(Context context, String service, int api_version) {
+    private static RestAdapter createRestAdapter(Context context, String service) {
 
         String urlService = null;
 
         if (TMDB_SERVICE.compareTo(service) == 0) {
-            if(api_version == 3)
-                urlService = Constants.BASE_URL_V3;
-            else
-                urlService = Constants.BASE_URL_V4;
+            urlService = Constants.BASE_URL;
         }
 
 
@@ -98,28 +86,15 @@ public class ApiClient {
     }
 
     /**
-     * Return an implementation of the API defined by {@link MovieApiInterfaceV3}
+     * Return an implementation of the API defined by {@link MovieApiInterface}
      *
      * @param context context to access the application resources
-     * @return a web service interface implementation of <code>MovieApiInterfaceV3</code>
+     * @return a web service interface implementation of <code>MovieApiInterface</code>
      */
-    public static MovieApiInterfaceV3 getMovieV3ServiceInterface(Context context) {
-        if (movieApiInterfaceV3 == null) {
-            movieApiInterfaceV3 = getRestAdapter(context, TMDB_SERVICE, 3).create(MovieApiInterfaceV3.class);
+    public static MovieApiInterface getMovieServiceInterface(Context context) {
+        if (movieApiInterface == null) {
+            movieApiInterface = getRestAdapter(context, TMDB_SERVICE).create(MovieApiInterface.class);
         }
-        return movieApiInterfaceV3;
-    }
-
-    /**
-     * Return an implementation of the API defined by {@link MovieApiInterfaceV4}
-     *
-     * @param context context to access the application resources
-     * @return a web service interface implementation of <code>MovieApiInterfaceV4</code>
-     */
-    public static MovieApiInterfaceV4 getMovieV4ServiceInterface(Context context) {
-        if (movieApiInterfaceV4 == null) {
-            movieApiInterfaceV4 = getRestAdapter(context, TMDB_SERVICE, 4).create(MovieApiInterfaceV4.class);
-        }
-        return movieApiInterfaceV4;
+        return movieApiInterface;
     }
 }

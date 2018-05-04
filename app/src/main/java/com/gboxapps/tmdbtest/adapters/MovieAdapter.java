@@ -1,6 +1,7 @@
 package com.gboxapps.tmdbtest.adapters;
 
 import android.app.Activity;
+import android.support.v4.view.ViewCompat;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -21,7 +22,7 @@ import butterknife.ButterKnife;
 public class MovieAdapter extends RecyclerView.Adapter<MovieAdapter.ViewHolder>{
 
     public interface OnItemClickListener {
-        void onItemClick(Movie item, View view);
+        void onItemClick(int position, Movie item, View view, ImageView poster);
     }
 
     private List<Movie> mDataset;
@@ -45,8 +46,17 @@ public class MovieAdapter extends RecyclerView.Adapter<MovieAdapter.ViewHolder>{
     }
 
     @Override
-    public void onBindViewHolder(MovieAdapter.ViewHolder holder, int position) {
+    public void onBindViewHolder(final MovieAdapter.ViewHolder holder, final int position) {
         holder.setData(mDataset.get(position));
+
+        ViewCompat.setTransitionName(holder.mPoster, mDataset.get(position).getId());
+
+        holder.itemView.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                listener.onItemClick(holder.getAdapterPosition(), mDataset.get(position), holder.mParentView, holder.mPoster);
+            }
+        });
     }
 
     @Override
@@ -83,13 +93,6 @@ public class MovieAdapter extends RecyclerView.Adapter<MovieAdapter.ViewHolder>{
                         public void onError() {
                         }
                     });
-
-            mParentView.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    listener.onItemClick(movie, mParentView);
-                }
-            });
 
         }
     }
