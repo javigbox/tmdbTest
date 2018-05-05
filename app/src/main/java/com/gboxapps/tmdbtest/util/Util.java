@@ -2,6 +2,8 @@ package com.gboxapps.tmdbtest.util;
 
 import android.app.Activity;
 import android.content.Context;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.telephony.TelephonyManager;
 
 import java.io.BufferedReader;
@@ -47,6 +49,11 @@ public class Util {
 
     }
 
+    /**
+     * Transform a date into a year
+     * @param date
+     * @return
+     */
     public static String getYearFromDate(String date){
 
         DecimalFormat mFormat= new DecimalFormat("00");
@@ -63,6 +70,18 @@ public class Util {
         cFrom.setTime(dateFrom);
 
         return mFormat.format(cFrom.get(Calendar.YEAR));
+    }
+
+    /**
+     * Check internet connection
+     * @param activity
+     * @return
+     */
+    public static boolean isConnectedInternet(Activity activity) {
+        ConnectivityManager cm;
+        cm = (ConnectivityManager) activity.getSystemService(Context.CONNECTIVITY_SERVICE);
+        NetworkInfo netInfo = cm.getActiveNetworkInfo();
+        return netInfo != null && netInfo.isConnectedOrConnecting();
     }
 
 }

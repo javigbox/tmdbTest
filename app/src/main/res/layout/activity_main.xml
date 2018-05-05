@@ -62,7 +62,7 @@
         android:fillViewport="true"
         app:layout_behavior="@string/appbar_scrolling_view_behavior">
 
-        <LinearLayout
+        <RelativeLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical">
@@ -71,9 +71,35 @@
                 android:id="@+id/recyclerview"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
-                android:clipToPadding="false" />
+                android:clipToPadding="false"/>
 
-        </LinearLayout>
+            <LinearLayout
+                android:id="@+id/layout_no_internet"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:layout_marginTop="40dp"
+                android:gravity="center"
+                android:visibility="gone">
+
+                <ImageView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:src="@drawable/no_internet"/>
+
+                <TextView
+                    fontPath="fonts/SourceSansPro-SemiBold.ttf"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/error_no_internet"
+                    android:textColor="@color/colorAccent"
+                    android:alpha=".5"
+                    android:layout_marginTop="20dp"
+                    tools:ignore="MissingPrefix" />
+
+            </LinearLayout>
+
+        </RelativeLayout>
 
     </android.support.v4.widget.NestedScrollView>
 

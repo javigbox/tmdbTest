@@ -1,12 +1,15 @@
 package com.gboxapps.tmdbtest.activities;
 
+import android.app.ProgressDialog;
 import android.app.SearchManager;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Typeface;
 import android.support.design.widget.AppBarLayout;
 import android.support.design.widget.CollapsingToolbarLayout;
+import android.support.design.widget.CoordinatorLayout;
 import android.support.design.widget.FloatingActionButton;
+import android.support.design.widget.Snackbar;
 import android.support.v4.app.ActivityOptionsCompat;
 import android.support.v4.view.MenuItemCompat;
 import android.support.v4.view.ViewCompat;
@@ -24,6 +27,7 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 
 import com.gboxapps.tmdbtest.R;
 import com.gboxapps.tmdbtest.adapters.MovieAdapter;
@@ -48,6 +52,11 @@ import uk.co.chrisjenx.calligraphy.CalligraphyContextWrapper;
 
 public class MainActivity extends AppCompatActivity {
 
+    ProgressDialog pdLoading;
+
+    @BindView(R.id.main_content)
+    CoordinatorLayout mainContent;
+
     @BindView(R.id.appbar)
     AppBarLayout appBarLayout;
 
@@ -59,6 +68,9 @@ public class MainActivity extends AppCompatActivity {
 
     @BindView(R.id.nestedScroll)
     NestedScrollView nestedScroll;
+
+    @BindView(R.id.layout_no_internet)
+    LinearLayout layoutNoInternet;
 
     private Toolbar toolbar;
     private CollapsingToolbarLayout collapsingToolbarLayout;
@@ -109,12 +121,18 @@ public class MainActivity extends AppCompatActivity {
             movieAdapter.notifyDataSetChanged();
 
             isLoading = false;
+            if (null != pdLoading && pdLoading.isShowing()) {
+                pdLoading.dismiss();
+            }
         }
 
         @Override
         public void failure(RetrofitError error) {
             String errord = error.getMessage();
             isLoading = false;
+            if (null != pdLoading && pdLoading.isShowing()) {
+                pdLoading.dismiss();
+            }
         }
     };
 
@@ -179,6 +197,7 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
         ButterKnife.bind(this);
 
+        pdLoading = new ProgressDialog(this);
         movieApiInterface = ApiClient.getMovieServiceInterface(this);
 
         mLayoutManager = new LinearLayoutManager(this);
@@ -238,13 +257,17 @@ public class MainActivity extends AppCompatActivity {
                             query = newText;
                             movies.clear();
                             moviesSearch.clear();
-                            if (query.equals(""))
-                                movieApiInterface.getPopularMovies(Constants.API_KEY, String.valueOf(currentPage),
-                                        Util.getIsoCode(MainActivity.this), Util.getIsoCode(MainActivity.this), callbackList);
-                            else {
-                                isNewSearch = true;
-                                movieApiInterface.searchMovies(Constants.API_KEY, String.valueOf(currentPage), query, Util.getIsoCode(MainActivity.this), callbackSearch);
-                            }
+                            if(Util.isConnectedInternet(MainActivity.this)){
+                                layoutNoInternet.setVisibility(View.GONE);
+                                if (query.equals(""))
+                                    movieApiInterface.getPopularMovies(Constants.API_KEY, String.valueOf(currentPage),
+                                            Util.getIsoCode(MainActivity.this), Util.getIsoCode(MainActivity.this), callbackList);
+                                else {
+                                    isNewSearch = true;
+                                    movieApiInterface.searchMovies(Constants.API_KEY, String.valueOf(currentPage), query, Util.getIsoCode(MainActivity.this), callbackSearch);
+                                }
+                            } else
+                                layoutNoInternet.setVisibility(View.VISIBLE);
                             return false;
                         }
                     });
@@ -315,23 +338,26 @@ public class MainActivity extends AppCompatActivity {
                     if ((scrollY >= (v.getChildAt(v.getChildCount() - 1).getMeasuredHeight() - v.getMeasuredHeight())) &&
                             scrollY > oldScrollY) {
 
-                        visibleItemCount = mLayoutManager.getChildCount();
-                        totalItemCount = mLayoutManager.getItemCount();
-                        pastVisiblesItems = mLayoutManager.findFirstVisibleItemPosition();
+                        if(Util.isConnectedInternet(MainActivity.this)){
 
-                        if (!isLoading) {
+                            visibleItemCount = mLayoutManager.getChildCount();
+                            totalItemCount = mLayoutManager.getItemCount();
+                            pastVisiblesItems = mLayoutManager.findFirstVisibleItemPosition();
 
-                            if ((visibleItemCount + pastVisiblesItems) >= totalItemCount) {
+                            if (!isLoading) {
 
-                                isLoading = true;
-                                currentPage++;
-                                if (isSearchActive) {
-                                    isNewSearch = false;
-                                    movieApiInterface.searchMovies(Constants.API_KEY, String.valueOf(currentPage), query, Util.getIsoCode(MainActivity.this), callbackSearch);
-                                } else
-                                    movieApiInterface.getPopularMovies(Constants.API_KEY, String.valueOf(currentPage),
-                                            Util.getIsoCode(MainActivity.this), Util.getIsoCode(MainActivity.this), callbackList);
+                                if ((visibleItemCount + pastVisiblesItems) >= totalItemCount) {
 
+                                    isLoading = true;
+                                    currentPage++;
+                                    if (isSearchActive) {
+                                        isNewSearch = false;
+                                        movieApiInterface.searchMovies(Constants.API_KEY, String.valueOf(currentPage), query, Util.getIsoCode(MainActivity.this), callbackSearch);
+                                    } else
+                                        movieApiInterface.getPopularMovies(Constants.API_KEY, String.valueOf(currentPage),
+                                                Util.getIsoCode(MainActivity.this), Util.getIsoCode(MainActivity.this), callbackList);
+
+                                }
                             }
                         }
                     }
@@ -341,9 +367,16 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void getMovieList() {
-        isLoading = true;
-        movieApiInterface.getPopularMovies(Constants.API_KEY, String.valueOf(currentPage),
-                Util.getIsoCode(MainActivity.this), Util.getIsoCode(MainActivity.this), callbackList);
+        if(Util.isConnectedInternet(MainActivity.this)){
+            pdLoading.setMessage(getResources().getString(R.string.loading_movies));
+            pdLoading.setCancelable(false);
+            pdLoading.show();
+            isLoading = true;
+            movieApiInterface.getPopularMovies(Constants.API_KEY, String.valueOf(currentPage),
+                    Util.getIsoCode(MainActivity.this), Util.getIsoCode(MainActivity.this), callbackList);
+        } else {
+            layoutNoInternet.setVisibility(View.VISIBLE);
+        }
     }
 
     @OnClick({R.id.fab, R.id.fab_bar})
