@@ -84,6 +84,7 @@ public class MovieAdapter extends RecyclerView.Adapter<MovieAdapter.ViewHolder>{
 
             Picasso.with(mParentView.getContext())
                     .load(Constants.BASE_URL_IMAGES + movie.getPoster_path())
+                    .placeholder(R.drawable.movie_placeholder)
                     .into( mPoster, new com.squareup.picasso.Callback() {
                         @Override
                         public void onSuccess() {
