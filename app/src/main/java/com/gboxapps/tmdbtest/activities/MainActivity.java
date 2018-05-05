@@ -63,6 +63,7 @@ public class MainActivity extends AppCompatActivity {
     private Toolbar toolbar;
     private CollapsingToolbarLayout collapsingToolbarLayout;
     private SearchView searchView;
+    private boolean isToolbarExpanded = true;
 
     private MovieApiInterface movieApiInterface;
 
@@ -190,6 +191,16 @@ public class MainActivity extends AppCompatActivity {
     }
 
     @Override
+    public void onBackPressed() {
+        if (!isToolbarExpanded) {
+            appBarLayout.setExpanded(true);
+            nestedScroll.scrollTo(0, 0);
+        } else
+            super.onBackPressed();
+
+    }
+
+    @Override
     protected void attachBaseContext(Context newBase) {
         super.attachBaseContext(CalligraphyContextWrapper.wrap(newBase));
     }
@@ -288,8 +299,10 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onStateChanged(AppBarLayout appBarLayout, State state) {
                 if (state.name().equals("EXPANDED") || state.name().equals("IDLE")) {
+                    isToolbarExpanded = true;
                     fab.hide();
                 } else {
+                    isToolbarExpanded = false;
                     fab.show();
                 }
             }
