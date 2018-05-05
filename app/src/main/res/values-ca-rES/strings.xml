@@ -6,4 +6,12 @@
 
     <string name="year">Any:</string>
     <string name="overview">Sinopsi:</string>
+
+    <!--LOAD MESSAGES-->
+    <string name="loading_movies">Carregant pel·lícules...</string>
+
+    <!--ERROR MESSAGES-->
+    <string name="error_no_internet">No hi ha connexió a internet</string>
+    <string name="error">¡Ups! Alguna cosa ha anat malament-ho a provar més tard</string>
+
 </resources>

@@ -6,4 +6,12 @@
 
     <string name="year">Year:</string>
     <string name="overview">Overview:</string>
+
+    <!--LOAD MESSAGES-->
+    <string name="loading_movies">Loading movies...</string>
+
+    <!--ERROR MESSAGES-->
+    <string name="error_no_internet">There is no internet connection</string>
+    <string name="error">¡Oops! Something went wrong, try again later</string>
+
 </resources>
