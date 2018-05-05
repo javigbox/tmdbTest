@@ -72,6 +72,9 @@ public class MainActivity extends AppCompatActivity {
     @BindView(R.id.layout_no_internet)
     LinearLayout layoutNoInternet;
 
+    @BindView(R.id.layout_error)
+    LinearLayout layoutError;
+
     private Toolbar toolbar;
     private CollapsingToolbarLayout collapsingToolbarLayout;
     private SearchView searchView;
@@ -98,6 +101,7 @@ public class MainActivity extends AppCompatActivity {
     private Callback<Response> callbackList = new Callback<Response>() {
         @Override
         public void success(Response response, Response response2) {
+            layoutError.setVisibility(View.GONE);
             String json = Util.getString(response.getBody());
 
             List<Movie> resultList = MoviesParser.parseMovies(json);
@@ -129,6 +133,7 @@ public class MainActivity extends AppCompatActivity {
         @Override
         public void failure(RetrofitError error) {
             String errord = error.getMessage();
+            layoutError.setVisibility(View.VISIBLE);
             isLoading = false;
             if (null != pdLoading && pdLoading.isShowing()) {
                 pdLoading.dismiss();
@@ -139,6 +144,7 @@ public class MainActivity extends AppCompatActivity {
     private Callback<Response> callbackSearch = new Callback<Response>() {
         @Override
         public void success(Response response, Response response2) {
+            layoutError.setVisibility(View.GONE);
             String json = Util.getString(response.getBody());
 
             List<Movie> resultList = MoviesParser.parseMovies(json);
@@ -187,6 +193,7 @@ public class MainActivity extends AppCompatActivity {
         @Override
         public void failure(RetrofitError error) {
             String errord = error.getMessage();
+            layoutError.setVisibility(View.VISIBLE);
             isLoading = false;
         }
     };

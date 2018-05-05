@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<android.support.design.widget.CoordinatorLayout
-    xmlns:android="http://schemas.android.com/apk/res/android"
+<android.support.design.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/main_content"
@@ -38,7 +37,7 @@
                 <ImageView
                     android:layout_width="100dp"
                     android:layout_height="100dp"
-                    android:src="@drawable/themoviedb"/>
+                    android:src="@drawable/themoviedb" />
 
             </LinearLayout>
 
@@ -71,30 +70,60 @@
                 android:id="@+id/recyclerview"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
-                android:clipToPadding="false"/>
+                android:clipToPadding="false" />
 
             <LinearLayout
                 android:id="@+id/layout_no_internet"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:orientation="vertical"
+                android:layout_marginLeft="20dp"
+                android:layout_marginRight="20dp"
                 android:layout_marginTop="40dp"
                 android:gravity="center"
+                android:orientation="vertical"
                 android:visibility="gone">
 
                 <ImageView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:src="@drawable/no_internet"/>
+                    android:src="@drawable/no_internet" />
 
                 <TextView
                     fontPath="fonts/SourceSansPro-SemiBold.ttf"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
+                    android:layout_marginTop="20dp"
+                    android:alpha=".5"
                     android:text="@string/error_no_internet"
                     android:textColor="@color/colorAccent"
-                    android:alpha=".5"
+                    tools:ignore="MissingPrefix" />
+
+            </LinearLayout>
+
+            <LinearLayout
+                android:id="@+id/layout_error"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="20dp"
+                android:layout_marginRight="20dp"
+                android:layout_marginTop="40dp"
+                android:gravity="center"
+                android:orientation="vertical"
+                android:visibility="gone">
+
+                <ImageView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:src="@drawable/error" />
+
+                <TextView
+                    fontPath="fonts/SourceSansPro-SemiBold.ttf"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
                     android:layout_marginTop="20dp"
+                    android:alpha=".5"
+                    android:text="@string/error"
+                    android:textColor="@color/colorAccent"
                     tools:ignore="MissingPrefix" />
 
             </LinearLayout>
@@ -112,7 +141,7 @@
         android:scaleType="center"
         android:src="@drawable/ic_search_black_24dp"
         app:layout_anchor="@id/appbar"
-        app:layout_anchorGravity="bottom|right|end"/>
+        app:layout_anchorGravity="bottom|right|end" />
 
     <android.support.design.widget.FloatingActionButton
         android:id="@+id/fab"
