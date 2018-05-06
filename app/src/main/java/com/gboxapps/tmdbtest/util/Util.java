@@ -22,12 +22,24 @@ import retrofit.mime.TypedInput;
 
 public class Util {
 
-    public static String getIsoCode(Activity activity){
+    /**
+     * Gets current language code depending on the phone language.
+     * @return
+     */
+    public static String getLanguageCode(){
         return Locale.getDefault().getLanguage();
     }
 
     /**
-     * Obtiene el string de la respuesta del servicio
+     * Gets current ISO code depending on the phone country.
+     * @return
+     */
+    public static String getCountryCode(){
+        return Locale.getDefault().getCountry();
+    }
+
+    /**
+     * Gets the web service response string
      *
      * @param input
      * @return
@@ -50,7 +62,7 @@ public class Util {
     }
 
     /**
-     * Transform a date into a year
+     * Transforms a date into a year
      * @param date
      * @return
      */
@@ -73,7 +85,7 @@ public class Util {
     }
 
     /**
-     * Check internet connection
+     * Checks internet connection
      * @param activity
      * @return
      */

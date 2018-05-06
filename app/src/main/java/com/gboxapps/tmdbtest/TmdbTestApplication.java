@@ -19,6 +19,7 @@ public class TmdbTestApplication extends Application {
         return mSharedInstance;
     }
 
+    // Called when the application is starting, before any other application objects have been created.
     public void onCreate() {
         super.onCreate();
 

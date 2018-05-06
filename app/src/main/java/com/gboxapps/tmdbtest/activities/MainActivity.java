@@ -9,7 +9,6 @@ import android.support.design.widget.AppBarLayout;
 import android.support.design.widget.CollapsingToolbarLayout;
 import android.support.design.widget.CoordinatorLayout;
 import android.support.design.widget.FloatingActionButton;
-import android.support.design.widget.Snackbar;
 import android.support.v4.app.ActivityOptionsCompat;
 import android.support.v4.view.MenuItemCompat;
 import android.support.v4.view.ViewCompat;
@@ -52,8 +51,7 @@ import uk.co.chrisjenx.calligraphy.CalligraphyContextWrapper;
 
 public class MainActivity extends AppCompatActivity {
 
-    ProgressDialog pdLoading;
-
+    //UI Elements
     @BindView(R.id.main_content)
     CoordinatorLayout mainContent;
 
@@ -75,18 +73,24 @@ public class MainActivity extends AppCompatActivity {
     @BindView(R.id.layout_error)
     LinearLayout layoutError;
 
+    ProgressDialog pdLoading;
+
     private Toolbar toolbar;
     private CollapsingToolbarLayout collapsingToolbarLayout;
     private SearchView searchView;
+    private MenuItem searchItem;
     private boolean isToolbarExpanded = true;
 
+    //The instance of MovieApiInterface for service requests
     private MovieApiInterface movieApiInterface;
 
+    //Lists elements
     private List<Movie> movies = new ArrayList<>();
     private List<Movie> moviesSearch = new ArrayList<>();
     private LinearLayoutManager mLayoutManager;
     private MovieAdapter movieAdapter;
 
+    //Pagination and search elements
     private int currentPage = 1;
     private int visibleItemCount = 0;
     private int totalItemCount = 0;
@@ -96,8 +100,7 @@ public class MainActivity extends AppCompatActivity {
     private boolean isNewSearch = false;
     private String query = "";
 
-    private MenuItem searchItem;
-
+    //Callback to get the Movie List response
     private Callback<Response> callbackList = new Callback<Response>() {
         @Override
         public void success(Response response, Response response2) {
@@ -105,10 +108,12 @@ public class MainActivity extends AppCompatActivity {
             String json = Util.getString(response.getBody());
 
             List<Movie> resultList = MoviesParser.parseMovies(json);
+            //Add new elements to current list
             movies.addAll(resultList);
             movieAdapter = new MovieAdapter(movies, MainActivity.this, new MovieAdapter.OnItemClickListener() {
                 @Override
                 public void onItemClick(int position, Movie item, View view, ImageView imageView) {
+                    //Click on element. Intent with shared element.
                     Intent intent = new Intent(MainActivity.this, MovieDetailActivity.class);
                     intent.putExtra("movie", item);
                     intent.putExtra("poster_transition_name", ViewCompat.getTransitionName(imageView));
@@ -132,7 +137,6 @@ public class MainActivity extends AppCompatActivity {
 
         @Override
         public void failure(RetrofitError error) {
-            String errord = error.getMessage();
             layoutError.setVisibility(View.VISIBLE);
             isLoading = false;
             if (null != pdLoading && pdLoading.isShowing()) {
@@ -141,6 +145,7 @@ public class MainActivity extends AppCompatActivity {
         }
     };
 
+    //Callback to get the Search response
     private Callback<Response> callbackSearch = new Callback<Response>() {
         @Override
         public void success(Response response, Response response2) {
@@ -213,11 +218,13 @@ public class MainActivity extends AppCompatActivity {
 
         initToolbar();
         setupWidgets();
+        //TODO: 1. When the app is launched, an infinitelist of the most popular movies is displayed
         getMovieList();
     }
 
     @Override
     public void onBackPressed() {
+        //If the list is not on top, it goes to top.
         if (!isToolbarExpanded) {
             appBarLayout.setExpanded(true);
             nestedScroll.scrollTo(0, 0);
@@ -228,6 +235,7 @@ public class MainActivity extends AppCompatActivity {
 
     @Override
     protected void attachBaseContext(Context newBase) {
+        //Necessary to change typeface of Activity (lib. calligraphy)
         super.attachBaseContext(CalligraphyContextWrapper.wrap(newBase));
     }
 
@@ -260,24 +268,36 @@ public class MainActivity extends AppCompatActivity {
 
                         @Override
                         public boolean onQueryTextChange(String newText) {
+                            //TODO: 3.1 It is important that the search is automatically triggered, i.e. the search is automatically executed while typing the search term.
                             currentPage = 1;
                             query = newText;
+
+                            //TODO: 3.2 When the user continues typing, the old search should be cancelled and a search for the new term must be started ..
                             movies.clear();
                             moviesSearch.clear();
-                            if(Util.isConnectedInternet(MainActivity.this)){
+
+                            //App only execute requests if there's internet connection
+                            if (Util.isConnectedInternet(MainActivity.this)) {
                                 layoutNoInternet.setVisibility(View.GONE);
+
+                                //When the query is empty, app shows the main list
                                 if (query.equals(""))
                                     movieApiInterface.getPopularMovies(Constants.API_KEY, String.valueOf(currentPage),
-                                            Util.getIsoCode(MainActivity.this), Util.getIsoCode(MainActivity.this), callbackList);
+                                            Util.getLanguageCode(), Util.getCountryCode(), callbackList);
                                 else {
                                     isNewSearch = true;
-                                    movieApiInterface.searchMovies(Constants.API_KEY, String.valueOf(currentPage), query, Util.getIsoCode(MainActivity.this), callbackSearch);
+                                    movieApiInterface.searchMovies(Constants.API_KEY, String.valueOf(currentPage), query,
+                                            Util.getLanguageCode(), Util.getCountryCode(), callbackSearch);
                                 }
-                            } else
+
+                            } else //No internet layout is shown
                                 layoutNoInternet.setVisibility(View.VISIBLE);
+
                             return false;
                         }
                     });
+
+                    //When search is triggered or closed, list goes to the top.
                     MenuItemCompat.setOnActionExpandListener(item, new MenuItemCompat.OnActionExpandListener() {
                         @Override
                         public boolean onMenuItemActionExpand(MenuItem item) {
@@ -307,6 +327,9 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
+    /***
+     * Instantiates toolbar components
+     */
     private void initToolbar() {
         toolbar = (Toolbar) findViewById(R.id.toolbar);
         collapsingToolbarLayout = (CollapsingToolbarLayout) findViewById(R.id.collapsing_toolbar);
@@ -322,9 +345,13 @@ public class MainActivity extends AppCompatActivity {
         collapsingToolbarLayout.setExpandedTitleMarginBottom(70);
     }
 
+    /**
+     * Instantiates UI components
+     */
     public void setupWidgets() {
         recyclerView.setNestedScrollingEnabled(false);
 
+        //App shows one FloatingActionButton or another depending on the appBarLayout state
         appBarLayout.addOnOffsetChangedListener(new AppBarStateChangeListener() {
             @Override
             public void onStateChanged(AppBarLayout appBarLayout, State state) {
@@ -338,6 +365,7 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
+        //TODO: 2. As soon as the user scrolls down and reaches the end of the list, the next page of movies is loaded.
         nestedScroll.setOnScrollChangeListener(new NestedScrollView.OnScrollChangeListener() {
             @Override
             public void onScrollChange(NestedScrollView v, int scrollX, int scrollY, int oldScrollX, int oldScrollY) {
@@ -345,24 +373,33 @@ public class MainActivity extends AppCompatActivity {
                     if ((scrollY >= (v.getChildAt(v.getChildCount() - 1).getMeasuredHeight() - v.getMeasuredHeight())) &&
                             scrollY > oldScrollY) {
 
-                        if(Util.isConnectedInternet(MainActivity.this)){
+                        //PAGINATION. Here's where the magic happens
+
+                        //New search is triggered only with internet connection
+                        if (Util.isConnectedInternet(MainActivity.this)) {
 
                             visibleItemCount = mLayoutManager.getChildCount();
                             totalItemCount = mLayoutManager.getItemCount();
                             pastVisiblesItems = mLayoutManager.findFirstVisibleItemPosition();
 
+                            //If there's no another processing request, app can do another one
                             if (!isLoading) {
 
+                                //When past items and current items are equals to total items, we've reached the end!!
                                 if ((visibleItemCount + pastVisiblesItems) >= totalItemCount) {
 
                                     isLoading = true;
                                     currentPage++;
+
+                                    //Depending on the state of the searchView, app execute one request or another
                                     if (isSearchActive) {
                                         isNewSearch = false;
-                                        movieApiInterface.searchMovies(Constants.API_KEY, String.valueOf(currentPage), query, Util.getIsoCode(MainActivity.this), callbackSearch);
+                                        //TODO: 4. The search results should be scrollable via pagination as well.
+                                        movieApiInterface.searchMovies(Constants.API_KEY, String.valueOf(currentPage), query,
+                                                Util.getLanguageCode(), Util.getCountryCode(), callbackSearch);
                                     } else
                                         movieApiInterface.getPopularMovies(Constants.API_KEY, String.valueOf(currentPage),
-                                                Util.getIsoCode(MainActivity.this), Util.getIsoCode(MainActivity.this), callbackList);
+                                                Util.getLanguageCode(), Util.getCountryCode(), callbackList);
 
                                 }
                             }
@@ -374,13 +411,15 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void getMovieList() {
-        if(Util.isConnectedInternet(MainActivity.this)){
+
+        //First movie list request with progress dialog
+        if (Util.isConnectedInternet(MainActivity.this)) {
             pdLoading.setMessage(getResources().getString(R.string.loading_movies));
             pdLoading.setCancelable(false);
             pdLoading.show();
             isLoading = true;
             movieApiInterface.getPopularMovies(Constants.API_KEY, String.valueOf(currentPage),
-                    Util.getIsoCode(MainActivity.this), Util.getIsoCode(MainActivity.this), callbackList);
+                    Util.getLanguageCode(), Util.getCountryCode(), callbackList);
         } else {
             layoutNoInternet.setVisibility(View.VISIBLE);
         }
@@ -388,9 +427,12 @@ public class MainActivity extends AppCompatActivity {
 
     @OnClick({R.id.fab, R.id.fab_bar})
     public void search() {
+
+        //FloatingActionButtons trigger the search
         searchItem.setEnabled(true);
         ((ActionMenuItemView) findViewById(R.id.action_search)).callOnClick();
         searchItem.setEnabled(false);
+
     }
 
 }

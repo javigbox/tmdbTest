@@ -30,6 +30,7 @@ import uk.co.chrisjenx.calligraphy.CalligraphyContextWrapper;
 
 public class MovieDetailActivity extends AppCompatActivity {
 
+    //UI Elements
     @BindView(R.id.appbar)
     AppBarLayout appBarLayout;
 
@@ -42,11 +43,12 @@ public class MovieDetailActivity extends AppCompatActivity {
     @BindView(R.id.year)
     TextView year;
 
-    private Movie movie;
-    private String posterTransitionName;
-
     private Toolbar toolbar;
     private CollapsingToolbarLayout collapsingToolbarLayout;
+
+    //Movie elements
+    private Movie movie;
+    private String posterTransitionName;
 
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
@@ -54,14 +56,66 @@ public class MovieDetailActivity extends AppCompatActivity {
         setContentView(R.layout.activity_detail_movie);
         ButterKnife.bind(this);
 
+        //getting intent extras
         movie = getIntent().getParcelableExtra("movie");
-        posterTransitionName = getIntent().getStringExtra("poster_transition_name");
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
             posterTransitionName = getIntent().getStringExtra("poster_transition_name");
             mImagePoster.setTransitionName(posterTransitionName);
         }
 
+        initToolbar();
+        setupWidgets();
+    }
+
+    @Override
+    protected void attachBaseContext(Context newBase) {
+        //Necessary to change typeface of Activity (lib. calligraphy)
+        super.attachBaseContext(CalligraphyContextWrapper.wrap(newBase));
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId()) {
+            case android.R.id.home:
+                finish();
+                return true;
+            default:
+                return super.onOptionsItemSelected(item);
+
+        }
+    }
+
+    /***
+     * Instantiates toolbar components
+     */
+    private void initToolbar() {
+        toolbar = (Toolbar) findViewById(R.id.toolbar);
+        collapsingToolbarLayout = (CollapsingToolbarLayout) findViewById(R.id.collapsing_toolbar);
+        setSupportActionBar(toolbar);
+        final ActionBar actionBar = getSupportActionBar();
+
+        if (actionBar != null) {
+            actionBar.setHomeAsUpIndicator(R.drawable.ic_arrow_back_black_24dp);
+            actionBar.setDisplayHomeAsUpEnabled(true);
+        }
+
+        //TODO: 5.1 Important properties to show in the search results are the movie title (title)...
+        collapsingToolbarLayout.setTitle(movie.getTitle());
+
+        final Typeface tf = Typeface.createFromAsset(this.getAssets(), "fonts/SourceSansPro-Bold.ttf");
+        collapsingToolbarLayout.setCollapsedTitleTypeface(tf);
+        collapsingToolbarLayout.setExpandedTitleTextAppearance(R.style.CollapsingToolbarTextStyle);
+        collapsingToolbarLayout.setExpandedTitleTypeface(tf);
+        collapsingToolbarLayout.setExpandedTitleMarginBottom(70);
+    }
+
+    /**
+     * Instantiates UI components
+     */
+    public void setupWidgets(){
+
+        //TODO: 5.2  ...the year of release ( year only ), the overview ( overview ) without truncation and a picture.
         Picasso.with(this)
                 .load(Constants.BASE_URL_IMAGES + movie.getPoster_path())
                 .noFade()
@@ -80,43 +134,5 @@ public class MovieDetailActivity extends AppCompatActivity {
         overView.setText(movie.getOverview());
         year.setText(Util.getYearFromDate(movie.getRelease_date()));
 
-        initToolbar();
-    }
-
-    @Override
-    protected void attachBaseContext(Context newBase) {
-        super.attachBaseContext(CalligraphyContextWrapper.wrap(newBase));
-    }
-
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        switch (item.getItemId()) {
-            case android.R.id.home:
-                finish();
-                return true;
-            default:
-                return super.onOptionsItemSelected(item);
-
-        }
-    }
-
-    private void initToolbar() {
-        toolbar = (Toolbar) findViewById(R.id.toolbar);
-        collapsingToolbarLayout = (CollapsingToolbarLayout) findViewById(R.id.collapsing_toolbar);
-        setSupportActionBar(toolbar);
-        final ActionBar actionBar = getSupportActionBar();
-
-        if (actionBar != null) {
-            actionBar.setHomeAsUpIndicator(R.drawable.ic_arrow_back_black_24dp);
-            actionBar.setDisplayHomeAsUpEnabled(true);
-        }
-
-        collapsingToolbarLayout.setTitle(movie.getTitle());
-
-        final Typeface tf = Typeface.createFromAsset(this.getAssets(), "fonts/SourceSansPro-Bold.ttf");
-        collapsingToolbarLayout.setCollapsedTitleTypeface(tf);
-        collapsingToolbarLayout.setExpandedTitleTextAppearance(R.style.CollapsingToolbarTextStyle);
-        collapsingToolbarLayout.setExpandedTitleTypeface(tf);
-        collapsingToolbarLayout.setExpandedTitleMarginBottom(70);
     }
 }

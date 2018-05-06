@@ -9,7 +9,7 @@ public class Constants {
     //Base URL for images
     public static final String BASE_URL_IMAGES = "https://image.tmdb.org/t/p/w500";
 
-    //Connection time out
+    //Connection time out (seconds)
     public static final long CONNECTION_TIME_OUT = 20;
 
     //The TMDB Api-Key

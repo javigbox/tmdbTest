@@ -11,6 +11,11 @@ import java.util.List;
 
 public class MoviesParser {
 
+    /**
+     * Returns a List of moves given a json String
+     * @param jObject json String
+     * @return
+     */
     public static List<Movie> parseMovies(String jObject){
 
         List<Movie> movies = new ArrayList<>();
