@@ -156,6 +156,7 @@ public class MainActivity extends AppCompatActivity {
             moviesSearch.addAll(resultList);
             if (isNewSearch) {
 
+                //if it's a new search app only show new result elements
                 movieAdapter = new MovieAdapter(resultList, MainActivity.this, new MovieAdapter.OnItemClickListener() {
                     @Override
                     public void onItemClick(int position, Movie item, View view, ImageView poster) {
@@ -173,6 +174,8 @@ public class MainActivity extends AppCompatActivity {
                 });
 
             } else {
+
+                //if it's a new page search app shows previous elements too
                 movieAdapter = new MovieAdapter(moviesSearch, MainActivity.this, new MovieAdapter.OnItemClickListener() {
                     @Override
                     public void onItemClick(int position, Movie item, View view, ImageView poster) {
